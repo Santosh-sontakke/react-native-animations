@@ -7,7 +7,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { Gesture, GestureDetector, Pressable } from 'react-native-gesture-handler';
+import { Gesture, GestureDetector, Pressable, TapGestureHandler } from 'react-native-gesture-handler';
 import Animated, {
   Extrapolate,
   interpolate,
@@ -21,7 +21,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { FlippedContent, FlipSingleCard } from './FlipSingleCard';
 import CardResult from './CardResult';
-import DragIndicator from './DragIndicator';
+import CurvedLineWithArrows from './CurvedLineWithArrows';
 
 const tarodCardImg = `https://img.freepik.com/free-vector/hand-drawn-esoteric-pattern-design_23-2149346196.jpg?size=500&ext=jpg`;
 const { width, height } = Dimensions.get('window');
@@ -54,7 +54,8 @@ const imageUrl = [{ title: "Ace of Spade", url: 'https://w0.peakpx.com/wallpaper
 {
   title: "Ace of spade", url: 'https://thumbs.dreamstime.com/z/flaming-ace-spades-playing-card-engulfed-fire-striking-image-ace-spades-playing-card-engulfed-vibrant-flames-328325187.jpg',
 },
-{ title: "Nine of Cups", url: 'https://as1.ftcdn.net/v2/jpg/04/15/79/90/1000_F_415799009_CoIxzQM2i8lTsk2o357WHGXFBTfDQRCT.jpg' }]
+{ title: "Nine of Cups", url: 'https://as1.ftcdn.net/v2/jpg/04/15/79/90/1000_F_415799009_CoIxzQM2i8lTsk2o357WHGXFBTfDQRCT.jpg' },
+{ title: "Queen", url: 'https://w0.peakpx.com/wallpaper/675/848/HD-wallpaper-queen-and-king-cards-diamond-king-poker-queen-skulls.jpg', }]
 
 
 
@@ -108,8 +109,8 @@ function TarotCard({ card, cardIndex, index, activeCardIndex, setIsCardSelected 
   });
 
   return (
-    <>
 
+    <TapGestureHandler onActivated={activeCardIndex == cardIndex ? handleCardPress : null}>
       <Animated.View
         style={[
           {
@@ -126,21 +127,20 @@ function TarotCard({ card, cardIndex, index, activeCardIndex, setIsCardSelected 
         ]}
       >
 
-        <Pressable onPress={activeCardIndex == cardIndex ? handleCardPress : null}>
-          <FlipSingleCard
-            isFlipped={isFlipped}
-            cardStyle={styles.flipCard}
-            FlippedContent={<FlippedContent />}
-            RegularContent={<Image
-              key={card.key}
-              source={{ uri: getImageUrl()}}
-              style={styles.tarotCardBackImage}
-            />}
-          />
+        {/* <Pressable onPress={activeCardIndex == cardIndex ? handleCardPress : null}> */}
+        <FlipSingleCard
+          isFlipped={isFlipped}
+          cardStyle={styles.flipCard}
+          RegularContent={<Image
+            key={card.key}
+            source={{ uri: getImageUrl() }}
+            style={styles.tarotCardBackImage}
+          />}
+        />
 
-        </Pressable>
+        {/* </Pressable> */}
       </Animated.View>
-    </>
+    </TapGestureHandler>
   );
 }
 
@@ -154,7 +154,7 @@ function TarotWheel({ cards, onCardChange, setIsCardSelected }) {
   });
 
   const normalizedAngle = useDerivedValue(() => {
-    return (angle.value % TWO_PI + TWO_PI) % TWO_PI; // Normalize to [0, TWO_PI]
+    return (angle.value % TWO_PI + TWO_PI) % TWO_PI;
   });
 
   const interpolatedIndex = useDerivedValue(() => {
@@ -236,10 +236,10 @@ export function TarotCards() {
   const [activeCardIndex, setActiveCardIndex] = useState(0);
   const [isCardSelected, setIsCardSelected] = useState(false);
   const [imageData, setImageData] = useState("")
-
+  const [numberOfCardTobBePickedUp, setNumberOfCardTobBePickedUp] = useState(1)
 
   useEffect(() => {
-    setActiveCardIndex(0); // Set the initial card index
+    setActiveCardIndex(0);
   }, []);
   useEffect(() => {
     setTimeout(() => {
@@ -248,18 +248,19 @@ export function TarotCards() {
   }, [isCardSelected]);
 
   const handleCardSelection = (isSelected, imageData) => {
-    console.log("SELECTED URL", isSelected, imageData)
     setIsCardSelected(isSelected)
     setImageData(imageData)
+    setNumberOfCardTobBePickedUp(numberOfCardTobBePickedUp + 1)
   }
   if (isCardSelected) return <CardResult resultCardImageData={imageData} />
+  const suffix = numberOfCardTobBePickedUp == 1 ? 'st' : numberOfCardTobBePickedUp == 2 ? 'nd' : numberOfCardTobBePickedUp == 3 ? 'rd' : 'th'
+  const headlineText = `Tap to pick your ${numberOfCardTobBePickedUp}${suffix} card`
   return (
     <View
       style={{
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#164aa1',
       }}
     >
       <StatusBar hidden />
@@ -267,11 +268,10 @@ export function TarotCards() {
         <View
           style={{
             position: 'absolute',
-            top: 100,         }}
+            top: 100,
+          }}
         >
-          {/* Selected card: {activeCardIndex}
-           */}
-          <Text style={styles.headerText}>Tap to pick your 1st card</Text>
+          <Text style={styles.headerText}>{headlineText}</Text>
           <View style={styles.headerDecoration}>
             <View style={styles.line} />
             <View style={styles.triangle} />
@@ -286,7 +286,7 @@ export function TarotCards() {
         onCardChange={(cardIndex) => setActiveCardIndex(cardIndex)}
         setIsCardSelected={handleCardSelection}
       />
-      <View style={{width:100, height:100, backgroundColor:'white', position:'absolute', bottom:10, borderRadius:100}}/>
+      <CurvedLineWithArrows />
     </View>
   );
 }
@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 30,
-    justifyContent:'center'
+    justifyContent: 'center'
   },
   line: {
     width: 50,
@@ -329,12 +329,5 @@ const styles = StyleSheet.create({
     borderRightColor: 'transparent',
     borderTopColor: 'white',
     marginHorizontal: 10,
-  },
-  dragText: {
-    color: 'white',
-    fontSize: 16,
-    marginTop: 20,
-    position: 'absolute',
-    bottom: 100
   },
 });

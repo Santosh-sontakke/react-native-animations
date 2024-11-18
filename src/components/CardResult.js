@@ -1,8 +1,6 @@
 import React, { useEffect } from "react";
 import {
-    View,
     Text,
-    TouchableOpacity,
     StyleSheet,
     Image,
     StatusBar,
@@ -12,6 +10,7 @@ import Animated, {
     withTiming,
     Easing,
     useAnimatedStyle,
+    withSpring,
 } from "react-native-reanimated";
 const minSize = 120;
 const tarotCardSize = {
@@ -19,42 +18,38 @@ const tarotCardSize = {
     height: minSize * 1.67,
     borderRadius: 12,
 };
-const CardResult = ({resultCardImageData}) => {
+const CardResult = ({ resultCardImageData }) => {
     const fadeInOpacity = useSharedValue(0);
+    const scale = useSharedValue(0.4); // Initial scale
+
     useEffect(() => {
         fadeInOpacity.value = withTiming(1, {
-            duration: 500,
+            duration: 100,
+            easing: Easing.linear,
+        });
+        scale.value =withTiming(1, {
+            duration: 100,
             easing: Easing.linear,
         });
         return () => {
-
+            fadeInOpacity.value = withTiming(0, {
+                duration: 100,
+                easing: Easing.linear,
+            })
         }
     }, [])
 
 
-    // const fadeIn = () => {
-    //     fadeInOpacity.value = withTiming(1, {
-    //         duration: 1000,
-    //         easing: Easing.linear,
-    //     });
-    // };
-
-    // const fadeOut = () => {
-    //     fadeInOpacity.value = withTiming(0, {
-    //         duration: 1000,
-    //         easing: Easing.linear,
-    //     });
-    // };
-
     const animatedStyle = useAnimatedStyle(() => {
         return {
-            opacity: fadeInOpacity.value, // Use the value directly
+            opacity: fadeInOpacity.value,
+            transform: [{ scale: withSpring(scale.value) }]
         };
     });
 
 
     return (
-        <View style={styles.container}>
+        <Animated.View style={[styles.container, animatedStyle]}>
             <StatusBar hidden />
             <Text style={styles.headerText}>You have selected card</Text>
             <Text style={styles.headerText}>{resultCardImageData.title}</Text>
@@ -72,18 +67,16 @@ const CardResult = ({resultCardImageData}) => {
                 />
             </Animated.View>
 
-        </View>
+        </Animated.View>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
         alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: '#164aa1',
-        // alignSelf:'flex-end',
+        justifyContent: "flex-start",
         position: 'absolute',
-        top: 20,
+        top: 100,
         flex: 1,
         width: '100%',
         height: '100%'
@@ -95,23 +88,6 @@ const styles = StyleSheet.create({
         width: 200,
         height: 200,
         borderRadius: 10,
-    },
-    button: {
-        marginTop: 20,
-        backgroundColor: "blue",
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-        borderRadius: 5,
-        shadowColor: "black",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.4,
-        shadowRadius: 4,
-        elevation: 4,
-    },
-    buttonText: {
-        color: "white",
-        fontWeight: "bold",
-        fontSize: 16,
     },
 
     tarotCardBackImage: {
@@ -127,7 +103,7 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontWeight: '500',
         marginBottom: 15,
-      },
+    },
 });
 
 export default CardResult;

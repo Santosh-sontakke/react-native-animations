@@ -31,7 +31,7 @@ const regularContentStyles = StyleSheet.create({
 export const FlippedContent = () => {
   return (
     <View style={flippedContentStyles.card}>
-      <Text style={flippedContentStyles.text}>Flipped content 🚀</Text>
+      <Text style={flippedContentStyles.text}>Flipped content </Text>
     </View>
   );
 };
@@ -55,7 +55,6 @@ export const FlipSingleCard = ({
   direction = 'y',
   duration = 500,
   RegularContent,
-  FlippedContent,
 }) => {
     const isDirectionX = direction === 'x';
     const regularCardAnimatedStyle = useAnimatedStyle(() => {
@@ -69,16 +68,6 @@ export const FlipSingleCard = ({
       };
     });
   
-    const flippedCardAnimatedStyle = useAnimatedStyle(() => {
-      const spinValue = interpolate(Number(isFlipped.value), [0, 1], [180, 360]);
-      const rotateValue = withTiming(`${spinValue}deg`, { duration });
-  
-      return {
-        transform: [
-          isDirectionX ? { rotateX: rotateValue } : { rotateY: rotateValue },
-        ],
-      };
-    });
   
     return (
       <View>
@@ -89,14 +78,6 @@ export const FlipSingleCard = ({
             regularCardAnimatedStyle,
           ]}>
           {RegularContent}
-        </Animated.View>
-        <Animated.View
-          style={[
-            flipCardStyles.flippedCard,
-            cardStyle,
-            flippedCardAnimatedStyle,
-          ]}>
-          {FlippedContent}
         </Animated.View>
       </View>
     );
